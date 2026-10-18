@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Размер фото</title>
+<style>
+:root{color-scheme:light dark;
+--bg:#f8f9fb;--surf:#eef1f6;--card:#fff;--on:#191c20;--on2:#43474e;--pri:#2b5fb4;--onpri:#fff;--sec:#d8e2ff;--onsec:#001a41;--out:#c3c6d0;--err:#ba1a1a}
+:root[data-theme=dark]{color-scheme:dark;--bg:#111318;--surf:#1d2025;--card:#23272d;--on:#e2e2e9;--on2:#c3c6d0;--pri:#aec6ff;--onpri:#002e69;--sec:#2f4578;--onsec:#d8e2ff;--out:#43474e;--err:#ffb4ab}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]):not([data-theme=dark]){--bg:#111318;--surf:#1d2025;--card:#23272d;--on:#e2e2e9;--on2:#c3c6d0;--pri:#aec6ff;--onpri:#002e69;--sec:#2f4578;--onsec:#d8e2ff;--out:#43474e;--err:#ffb4ab}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--on);font:15px/1.45 Roboto,system-ui,-apple-system,"Segoe UI",sans-serif}
+header{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:16px 20px}
+h1{font-size:22px;font-weight:500;margin:0}
+h2{font-size:15px;font-weight:500;margin:0 0 10px}
+main{display:grid;grid-template-columns:minmax(280px,360px) 1fr;gap:16px;padding:0 20px 28px;max-width:1100px;margin:auto}
+@media(max-width:760px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border-radius:20px;padding:16px;margin-bottom:16px}
+.seg{display:inline-flex;border:1px solid var(--out);border-radius:20px;overflow:hidden}
+.seg button{border:0;background:none;color:var(--on2);padding:7px 14px;font:inherit;cursor:pointer}
+.seg button+button{border-left:1px solid var(--out)}
+.seg button[aria-pressed=true]{background:var(--sec);color:var(--onsec)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--out);background:none;color:var(--on);border-radius:10px;padding:6px 10px;font:inherit;cursor:pointer;text-align:left}
+.chip small{display:block;color:var(--on2);font-size:11px}
+.chip[aria-pressed=true]{background:var(--sec);color:var(--onsec);border-color:transparent}
+.row{display:flex;gap:10px;align-items:center;margin:10px 0;flex-wrap:wrap}
+.row>label{flex:1}
+label.f{display:block;font-size:12px;color:var(--on2)}
+input[type=number],select{width:100%;margin-top:3px;padding:10px 12px;border-radius:10px;border:1px solid var(--out);background:var(--bg);color:var(--on);font:inherit}
+input:focus-visible,select:focus-visible,button:focus-visible,.drop:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+input[type=range]{width:100%;accent-color:var(--pri)}
+input[type=color]{width:44px;height:34px;border:1px solid var(--out);border-radius:8px;background:none;padding:2px}
+.sw{display:flex;gap:10px;align-items:flex-start;margin:8px 0;font-size:14px}
+.sw input{margin-top:3px;width:18px;height:18px;accent-color:var(--pri)}
+.sw small{display:block;color:var(--on2)}
+.btn{border:0;border-radius:20px;padding:10px 20px;font:inherit;font-weight:500;cursor:pointer;background:var(--pri);color:var(--onpri)}
+.btn.t{background:var(--sec);color:var(--onsec)}
+.btn:disabled{opacity:.4;cursor:default}
+.drop{display:block;border:2px dashed var(--out);border-radius:20px;padding:30px 16px;text-align:center;cursor:pointer;color:var(--on2);background:var(--card)}
+.drop.over{border-color:var(--pri);background:var(--sec);color:var(--onsec)}
+.item{display:grid;grid-template-columns:96px 1fr auto;gap:12px;align-items:center;background:var(--card);border-radius:20px;padding:12px;margin-top:12px}
+.item img{width:96px;height:96px;object-fit:contain;background:var(--surf);border-radius:12px}
+.item b{word-break:break-all;font-weight:500}
+.item .m{color:var(--on2);font-size:13px}
+.acts{display:flex;flex-direction:column;gap:6px}
+.acts .btn{padding:7px 14px;font-size:13px}
+.meta{grid-column:1/-1;background:var(--surf);border-radius:12px;padding:10px 12px;font-size:13px;display:none}
+.meta.open{display:block}
+.meta table{width:100%;border-collapse:collapse}
+.meta td{padding:2px 6px 2px 0;vertical-align:top;word-break:break-word}
+.meta td:first-child{color:var(--on2);white-space:nowrap}
+.warn{color:var(--err);font-weight:500}
+.ok{color:var(--on2)}
+.top{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<header>
+  <h1>Размер фото</h1>
+  <div class="seg" role="group" aria-label="Тема">
+    <button data-t="auto">Авто</button><button data-t="light">Светлая</button><button data-t="dark">Тёмная</button>
+  </div>
+</header>
+<main>
+  <section>
+    <div class="card">
+      <h2>Готовые размеры</h2>
+      <div class="chips" id="presets"></div>
+      <div class="row">
+        <label class="f">Ширина, px<input id="w" type="number" min="1" max="8000" value="1080"></label>
+        <label class="f">Высота, px<input id="h" type="number" min="1" max="8000" value="1920"></label>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Как вписать</h2>
+      <select id="fit" aria-label="Режим">
+        <option value="cover">Заполнить и обрезать края</option>
+        <option value="contain">Вписать целиком, поля цветом</option>
+        <option value="stretch">Растянуть (искажает)</option>
+      </select>
+      <div class="row"><span class="f">Цвет полей</span><input id="bg" type="color" value="#ffffff"></div>
+      <div class="row">
+        <label class="f">Формат<select id="fmt"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select></label>
+      </div>
+      <label class="f">Качество (JPEG/WebP): <span id="qv">92</span>%<input id="q" type="range" min="40" max="100" value="92"></label>
+    </div>
+    <div class="card">
+      <h2>Метаданные</h2>
+      <label class="sw"><input id="keep" type="checkbox"><span>Сохранить EXIF в JPEG<small>По умолчанию всё стирается: GPS, камера, дата, скрытые данные. Если включить, GPS тоже останется.</small></span></label>
+    </div>
+  </section>
+  <section>
+    <label class="drop" id="drop" tabindex="0">
+      Перетащите фото сюда или нажмите, чтобы выбрать
+      <input id="file" type="file" accept="image/*" multiple hidden>
+    </label>
+    <div class="top" style="margin-top:12px"><span class="m ok" id="count"></span>
+      <button class="btn t" id="zip" disabled>Скачать всё (ZIP)</button></div>
+    <div id="list"></div>
+  </section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const PRE=[["1080×1920","9:16 RuStore",1080,1920],["1920×1080","16:9 горизонт",1920,1080],["1080×2400","9:20",1080,2400],["1440×2560","9:16 QHD",1440,2560],["720×1280","9:16 малый",720,1280],["1080×1080","1:1",1080,1080],["512×512","иконка",512,512],["1024×500","баннер",1024,500],["1200×630","соцсети",1200,630]];
+// ---- тема
+const root=document.documentElement;
+function setTheme(t){try{localStorage.setItem('theme',t)}catch(e){}
+ if(t==='auto')root.removeAttribute('data-theme');else root.dataset.theme=t;
+ document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t))}
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>setTheme(b.dataset.t));
+let st='auto';try{st=localStorage.getItem('theme')||'auto'}catch(e){}setTheme(st);
+// ---- пресеты
+const pc=$('#presets');
+PRE.forEach(([n,d,w,h])=>{const b=document.createElement('button');b.className='chip';b.innerHTML=n+'<small>'+d+'</small>';b.dataset.w=w;b.dataset.h=h;
+ b.onclick=()=>{$('#w').value=w;$('#h').value=h;mark();run()};pc.append(b)});
+function mark(){pc.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.w==$('#w').value&&b.dataset.h==$('#h').value))}
+mark();
+// ---- EXIF
+const TAGS={0x010f:'Производитель',0x0110:'Модель',0x0112:'Ориентация',0x0131:'Программа',0x0132:'Дата',0x013b:'Автор',0x8298:'Копирайт',0x010e:'Описание',0x9003:'Дата съёмки',0x9004:'Дата оцифровки',0xa430:'Владелец камеры',0xa431:'Серийный № камеры',0xa433:'Объектив',0xa434:'Модель объектива',0x927c:'MakerNote',0x9286:'Комментарий',0xa420:'ID изображения',0x829a:'Выдержка',0x829d:'Диафрагма',0x8827:'ISO',0x920a:'Фокусное',0x9c9b:'XP Заголовок',0x9c9c:'XP Комментарий',0x9c9d:'XP Автор',0x9c9e:'XP Ключевые слова',0x9c9f:'XP Тема'};
+const GPST={1:'GPS: N/S',2:'GPS: широта',3:'GPS: E/W',4:'GPS: долгота',5:'GPS: высота ref',6:'GPS: высота',7:'GPS: время',12:'GPS: ед. скорости',13:'GPS: скорость',16:'GPS: направление ref',17:'GPS: направление',29:'GPS: дата',27:'GPS: метод',28:'GPS: область'};
+function parseMeta(buf){
+ const v=new DataView(buf),u=new Uint8Array(buf),out={rows:[],gps:null,segs:[],exifSeg:null,oriPos:-1};
+ const add=(k,val,flag)=>out.rows.push([k,val,flag]);
+ if(v.getUint16(0)===0xffd8){
+  let p=2;
+  while(p<v.byteLength-4){
+   if(v.getUint8(p)!==0xff)break;const m=v.getUint8(p+1);if(m===0xda||m===0xd9)break;
+   const len=v.getUint16(p+2),s=p+4,e=p+2+len;
+   const id=String.fromCharCode(...u.slice(s,s+Math.min(30,len-2)));
+   if(m===0xe1&&id.startsWith('Exif\0\0')){out.segs.push('EXIF');out.exifSeg=[p,e];tiff(v,s+6,out,add)}
+   else if(m===0xe1&&id.includes('ns.adobe.com/xap'))out.segs.push('XMP');
+   else if(m===0xed)out.segs.push('IPTC / Photoshop');
+   else if(m===0xfe){out.segs.push('Комментарий');add('Комментарий JPEG',new TextDecoder().decode(u.slice(s,e)).slice(0,200),1)}
+   else if(m===0xe2&&id.startsWith('ICC'))out.segs.push('ICC-профиль');
+   else if(m>=0xe1&&m<=0xef)out.segs.push('APP'+(m-0xe0)+' ('+len+' Б)');
+   p=e}
+ }else if(u[0]===0x89&&u[1]===0x50){
+  let p=8;const names=[];
+  while(p<u.length-8){const l=v.getUint32(p),n=String.fromCharCode(...u.slice(p+4,p+8));
+   if(['tEXt','iTXt','zTXt','eXIf'].includes(n)){names.push(n);if(n==='tEXt')add('PNG текст',new TextDecoder('latin1').decode(u.slice(p+8,p+8+Math.min(l,300))).replace('\0',': '),1)}
+   if(n==='IEND')break;p+=12+l}
+  out.segs=names.length?['PNG-блоки: '+names.join(', ')]:[];
+ }else if(String.fromCharCode(...u.slice(0,4))==='RIFF'){
+  let p=12;const names=[];
+  while(p<u.length-8){const n=String.fromCharCode(...u.slice(p,p+4)),l=v.getUint32(p+4,true);if(n==='EXIF'||n==='XMP ')names.push(n.trim());p+=8+l+(l&1)}
+  out.segs=names;
+ }
+ return out}
+function tiff(v,base,out,add){
+ const le=v.getUint16(base)===0x4949,g16=o=>v.getUint16(o,le),g32=o=>v.getUint32(o,le);
+ const sz={1:1,2:1,3:2,4:4,5:8,7:1,9:4,10:8};
+ function val(t,c,o){const n=sz[t]*c;const a=n>4?base+g32(o+8):o+8;
+  if(t===2){let s='';for(let i=0;i<c-1&&i<300;i++)s+=String.fromCharCode(v.getUint8(a+i));return s}
+  const r=[];for(let i=0;i<Math.min(c,6);i++){
+   if(t===3)r.push(g16(a+i*2));else if(t===4)r.push(g32(a+i*4));else if(t===1||t===7)r.push(v.getUint8(a+i));
+   else if(t===9)r.push(v.getInt32(a+i*4,le));
+   else if(t===5||t===10){const n=t===5?g32(a+i*8):v.getInt32(a+i*8,le),d=g32(a+i*8+4);r.push(d?n/d:0)}}
+  return c>6?r.join(', ')+'…':r.join(', ')}
+ function ifd(off,kind){const a=base+off,n=g16(a),g={};
+  for(let i=0;i<n;i++){const o=a+2+i*12,tag=g16(o),t=g16(o+2),c=g32(o+4);if(!sz[t])continue;
+   if(kind==='ifd'&&tag===0x8769){ifd(g32(o+8),'ifd');continue}
+   if(kind==='ifd'&&tag===0x8825){ifd(g32(o+8),'gps');continue}
+   if(kind==='ifd'&&tag===0x0112)out.oriPos=o+8;
+   if(kind==='gps'){g[tag]=val(t,c,o);if(GPST[tag]&&tag!==2&&tag!==4)add(GPST[tag],String(g[tag]),1);continue}
+   if(tag===0x927c){add('MakerNote (данные производителя)',c+' байт',1);continue}
+   if(TAGS[tag]){let x=val(t,c,o);if(tag>=0x9c9b&&tag<=0x9c9f){x=String.fromCharCode(...Array.from({length:Math.min(c/2,150)},(_,k)=>v.getUint16(base+g32(o+8)+k*2,true))).replace(/\0/g,'')}
+    add(TAGS[tag],String(x),[0x0132,0x9003,0x9004,0x010f,0x0110,0xa431,0xa430,0x013b,0x0131,0x9c9d].includes(tag))}}
+  if(kind==='gps'&&g[2]&&g[4]){const f=(a,r)=>{const x=String(a).split(', ').map(Number);return (x[0]+x[1]/60+x[2]/3600)*(/[SW]/.test(r)?-1:1)};
+   const la=f(g[2],g[1]),lo=f(g[4],g[3]);out.gps=[la,lo]}
+  return a}
+ ifd(g32(base+4),'ifd')}
+// ---- обработка
+const items=[];
+async function process(it){
+ const W=+$('#w').value,H=+$('#h').value,fit=$('#fit').value,fmt=$('#fmt').value;
+ const bmp=await createImageBitmap(it.file);
+ const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+ x.imageSmoothingQuality='high';
+ if(fmt==='image/jpeg'||fit==='contain'){x.fillStyle=$('#bg').value;x.fillRect(0,0,W,H)}
+ let dw=W,dh=H;
+ if(fit!=='stretch'){const s=(fit==='cover'?Math.max:Math.min)(W/bmp.width,H/bmp.height);dw=bmp.width*s;dh=bmp.height*s}
+ x.drawImage(bmp,(W-dw)/2,(H-dh)/2,dw,dh);
+ let blob=await new Promise(r=>c.toBlob(r,fmt,$('#q').value/100));
+ let kept=false;
+ if($('#keep').checked&&fmt==='image/jpeg'&&it.meta.exifSeg){
+  const [a,b]=it.meta.exifSeg,seg=new Uint8Array(it.buf.slice(a,b));
+  const op=it.meta.oriPos-a;if(it.meta.oriPos>=0){const dv=new DataView(seg.buffer);const le=dv.getUint16(10)===0x4949;dv.setUint16(op,1,le)}
+  const out=new Uint8Array(await blob.arrayBuffer());let p=2;
+  if(out[2]===0xff&&out[3]===0xe0)p=4+(out[4]<<8|out[5]);
+  blob=new Blob([out.slice(0,p),seg,out.slice(p)],{type:fmt});kept=true}
+ it.out=blob;it.dim=W+'×'+H;it.kept=kept;it.ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[fmt];
+ it.name=it.file.name.replace(/\.[^.]+$/,'')+'_'+W+'x'+H+'.'+it.ext;
+ if(it.url)URL.revokeObjectURL(it.url);it.url=URL.createObjectURL(blob);bmp.close()}
+async function run(){
+ if(!(+$('#w').value>0&&+$('#h').value>0))return;
+ for(const it of items)try{await process(it)}catch(e){it.err=true}
+ render()}
+const kb=n=>n>1048576?(n/1048576).toFixed(1)+' МБ':Math.round(n/1024)+' КБ';
+function metaHtml(it){const m=it.meta;
+ if(!m.rows.length&&!m.segs.length)return '<span class="ok">Скрытых метаданных не найдено.</span>';
+ let h='<b>Что было в исходном файле:</b>';
+ if(m.segs.length)h+='<div class="ok">Блоки: '+m.segs.join(', ')+'</div>';
+ if(m.gps)h+='<div class="warn">Геолокация: '+m.gps[0].toFixed(5)+', '+m.gps[1].toFixed(5)+' — <a href="https://www.openstreetmap.org/?mlat='+m.gps[0]+'&mlon='+m.gps[1]+'#map=16/'+m.gps[0]+'/'+m.gps[1]+'" target="_blank" rel="noopener" style="color:inherit">на карте</a></div>';
+ h+='<table>'+m.rows.map(r=>'<tr><td>'+esc(r[0])+'</td><td'+(r[2]?' class="warn"':'')+'>'+esc(r[1])+'</td></tr>').join('')+'</table>';
+ h+='<div class="ok" style="margin-top:6px">XMP/IPTC и MakerNote показаны только как наличие: внутри может быть больше.</div>';
+ return h}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function render(){
+ const L=$('#list');L.innerHTML='';
+ items.forEach((it,i)=>{
+  const d=document.createElement('div');d.className='item';
+  const risk=it.meta.gps?'<span class="warn">есть GPS</span>':it.meta.rows.length||it.meta.segs.length?'есть метаданные':'метаданных нет';
+  d.innerHTML='<img src="'+(it.url||'')+'" alt=""><div><b>'+esc(it.name||it.file.name)+'</b><div class="m">'+(it.err?'<span class="warn">Не удалось прочитать</span>':it.dim+' · '+kb(it.out.size)+' · оригинал '+kb(it.file.size))+'</div><div class="m">'+risk+' → '+(it.kept?'<span class="warn">перенесены в результат</span>':'стёрты в результате')+'</div></div><div class="acts"><a class="btn" href="'+(it.url||'#')+'" download="'+esc(it.name||'')+'" style="text-decoration:none;text-align:center">Скачать</a><button class="btn t" data-i="'+i+'">Метаданные</button></div><div class="meta" id="m'+i+'">'+metaHtml(it)+'</div>';
+  L.append(d)});
+ L.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>$('#m'+b.dataset.i).classList.toggle('open'));
+ $('#count').textContent=items.length?'Файлов: '+items.length:'';$('#zip').disabled=!items.length}
+async function add(files){
+ for(const f of files){if(!f.type.startsWith('image/'))continue;
+  const buf=await f.arrayBuffer();let meta;try{meta=parseMeta(buf)}catch(e){meta={rows:[],segs:[],gps:null}}
+  items.push({file:f,buf,meta})}
+ await run()}
+// ---- ZIP (без сжатия)
+const CT=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xedb88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc=u=>{let c=~0;for(const b of u)c=CT[(c^b)&255]^(c>>>8);return ~c>>>0};
+async function zip(){
+ const enc=new TextEncoder(),parts=[],cen=[];let off=0;const used={};
+ for(const it of items){if(!it.out)continue;
+  let nm=it.name;if(used[nm]){nm=nm.replace(/(\.\w+)$/,'_'+used[nm]+'$1')}used[it.name]=(used[it.name]||0)+1;
+  const n=enc.encode(nm),d=new Uint8Array(await it.out.arrayBuffer()),cr=crc(d);
+  const lh=new DataView(new ArrayBuffer(30));lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x800,true);lh.setUint32(14,cr,true);lh.setUint32(18,d.length,true);lh.setUint32(22,d.length,true);lh.setUint16(26,n.length,true);
+  parts.push(lh,n,d);
+  const ch=new DataView(new ArrayBuffer(46));ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x800,true);ch.setUint32(16,cr,true);ch.setUint32(20,d.length,true);ch.setUint32(24,d.length,true);ch.setUint16(28,n.length,true);ch.setUint32(42,off,true);
+  cen.push(ch,n);off+=30+n.length+d.length}
+ const cs=cen.reduce((a,x)=>a+(x.byteLength??x.length),0),e=new DataView(new ArrayBuffer(22));
+ e.setUint32(0,0x06054b50,true);e.setUint16(8,cen.length/2,true);e.setUint16(10,cen.length/2,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([...parts,...cen,e],{type:'application/zip'}));a.download='photos.zip';a.click()}
+$('#zip').onclick=zip;
+// ---- события
+const dr=$('#drop');
+dr.ondragover=e=>{e.preventDefault();dr.classList.add('over')};
+dr.ondragleave=()=>dr.classList.remove('over');
+dr.ondrop=e=>{e.preventDefault();dr.classList.remove('over');add(e.dataTransfer.files)};
+dr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('#file').click()}};
+$('#file').onchange=e=>{add(e.target.files);e.target.value=''};
+['w','h'].forEach(i=>$('#'+i).oninput=()=>{mark();run()});
+['fit','bg','fmt','keep'].forEach(i=>$('#'+i).onchange=run);
+$('#q').oninput=()=>{$('#qv').textContent=$('#q').value;run()};
+addEventListener('paste',e=>{const f=[...e.clipboardData.files];if(f.length)add(f)});
+</script>
+</body>
+</html>
